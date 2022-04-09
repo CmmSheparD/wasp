@@ -3,7 +3,7 @@ package core.primitive
 class Directory : Primitive {
     override val type = PrimitiveType.DIR
 
-    private data class DirEntry(val name: String, val hash: String, val type: PrimitiveType)
+    data class DirEntry(val name: String, val hash: String, val type: PrimitiveType)
     private val entries = mutableListOf<DirEntry>()
 
     override fun getContent(): String {
@@ -11,12 +11,19 @@ class Directory : Primitive {
         return entries.joinToString("\n") { "${it.hash}\t${it.type}\t${it.name}" }
     }
 
+    fun listEntries(): List<DirEntry> = entries
+
     fun addEntry(name: String, hash: String, type: PrimitiveType) {
-        removeEntry(name)
+        removeEntryByName(name)
         entries.add(DirEntry(name, hash, type))
     }
 
-    fun removeEntry(name: String) {
+    fun addEntry(entry: DirEntry) {
+        removeEntryByName(entry.name)
+        entries.add(entry)
+    }
+
+    fun removeEntryByName(name: String) {
         entries.removeIf { it.name == name }
     }
 }
