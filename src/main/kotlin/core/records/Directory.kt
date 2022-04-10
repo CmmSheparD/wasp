@@ -1,4 +1,4 @@
-package core.primitive
+package core.records
 
 class Directory : Primitive {
     override val type = PrimitiveType.DIR
