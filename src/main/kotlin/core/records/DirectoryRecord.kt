@@ -1,6 +1,6 @@
 package core.records
 
-class DirectoryRecord(val name: String) {
+class DirectoryRecord(val name: String) : Record {
     data class DirEntry(val name: String, val hash: String, val type: DirEntryType)
     enum class DirEntryType {
         FILE,
