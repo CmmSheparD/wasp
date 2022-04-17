@@ -12,8 +12,6 @@ class LocalCompressedRecordWriter(private val storagePath: String) : RecordWrite
     }
 
     private fun writeObject(at: String, what: ByteArray) {
-        File("$storagePath/$at").apply {
-            writeBytes(what)
-        }
+        File("$storagePath/$at").writeBytes(what)
     }
 }
