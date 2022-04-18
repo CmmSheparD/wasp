@@ -1,3 +1,5 @@
 package core.trackables
 
-sealed interface Trackable
+sealed interface Trackable {
+    val name: String
+}
