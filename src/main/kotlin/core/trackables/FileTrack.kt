@@ -1,5 +1,5 @@
 package core.trackables
 
-class FileTrack(val name: String) : Trackable {
+data class FileTrack(override val name: String) : Trackable {
     fun isSameFile(file: FileTrack) = name == file.name
 }
