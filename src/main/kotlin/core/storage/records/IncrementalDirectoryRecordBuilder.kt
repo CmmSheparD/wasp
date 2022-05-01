@@ -2,7 +2,7 @@ package core.storage.records
 
 import core.hash.SHA1Hash
 
-class IncrementalDirectoryRecordBuilder : DirectoryRecordBuilder {
+class DefaultDirectoryRecordBuilder : DirectoryRecordBuilder {
     private var name = DEFAULT_RECORD_STRING_VALUE
     private var hash = DEFAULT_RECORD_STRING_VALUE
     private val children = mutableListOf<Record>()
@@ -33,6 +33,10 @@ class IncrementalDirectoryRecordBuilder : DirectoryRecordBuilder {
         }
     }
 
+    fun addChildren(records: List<Record>) {
+        for (record in records) addChild(record)
+    }
+
     override fun getResult(): DirectoryRecord {
         children.sortBy { it.name }
         calculateHash()
@@ -44,3 +48,5 @@ class IncrementalDirectoryRecordBuilder : DirectoryRecordBuilder {
         hash = SHA1Hash.calculate(children.joinToString(CANONICAL_RECORD_LINE_SEPARATOR))
     }
 }
+
+internal const val DEFAULT_RECORD_STRING_VALUE = ""

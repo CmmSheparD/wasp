@@ -18,7 +18,5 @@ sealed class Record(val name: String, val hash: String) {
     final override fun toString() = "$hash $typeString $name"
 }
 
-internal const val DEFAULT_RECORD_STRING_VALUE = ""
-
 const val FILE_TYPE_STRING = "file"
 const val DIRECTORY_TYPE_STRING = "dir"
