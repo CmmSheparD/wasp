@@ -1,62 +1,54 @@
 package core.storage.records
 
-import core.hash.SHA1Hash
+import core.hash.HashCalculator
 
-class DirectoryRecord(name: String, hash: String, val children: List<Record>) : Record(name, hash) {
-    init {
-        require(children.isNotEmpty())
-    }
+class DirectoryRecord(name: String, hash: String, _children: List<Record> = emptyList()) : Record(name, hash) {
+    var children = _children.sortedBy { it.name }
+        get() {
+            return if (!isFetched) error("Accessing not fetched record.")
+            else field
+        }
+        private set
+    var isFetched = children.isNotEmpty()
+        private set
 
     fun getContentsAsText(separator: String = CANONICAL_RECORD_LINE_SEPARATOR) = children.joinToString(separator)
-}
 
-interface DirectoryRecordBuilder {
-    fun reset()
-    fun setName(name: String)
-    fun addChild(record: Record)
-    fun getResult(): DirectoryRecord
-}
+    class Fetcher(val hasher: HashCalculator) : SetDirectoryRecordBuilder() {
+        private var record: DirectoryRecord? = null
 
-class IncrementalDirectoryRecordBuilder : DirectoryRecordBuilder {
-    private var name = DEFAULT_RECORD_STRING_VALUE
-    private var hash = DEFAULT_RECORD_STRING_VALUE
-    private val children = mutableListOf<Record>()
+        override fun reset() {
+            super.reset()
+            record = null
+        }
 
-    override fun reset() {
-        name = DEFAULT_RECORD_STRING_VALUE
-        hash = DEFAULT_RECORD_STRING_VALUE
-        children.clear()
-    }
+        fun startFetching(record: DirectoryRecord) {
+            check(this.record == null)
+            this.record = record
+        }
 
-    fun resetWithCopy(record: DirectoryRecord) {
-        reset()
-        name = record.name
-        children.addAll(record.children)
-    }
+        override fun getResult(): DirectoryRecord {
+            if (record?.isFetched != true) gatherUp()
+            return record!!
+        }
 
-    override fun setName(name: String) {
-        this.name = name
-    }
+        private fun gatherUp() {
+            check(record != null)
+            val childrenList = children.map { it.record }.sortedBy { it.name }
+            checkConsistencyWith(childrenList)
+            record!!.children = childrenList
+            record!!.isFetched = true
+        }
 
-    override fun addChild(record: Record) {
-        val same = children.find { it.name == record.name }
-        if (same == null) {
-            children.add(record)
-        } else if (same.hash != hash) {
-            children.remove(same)
-            children.add(record)
+        private fun checkConsistencyWith(list: List<Record>) {
+            if (hasher.calculate(list.joinToString(CANONICAL_RECORD_LINE_SEPARATOR)) != record!!.hash)
+                throw FetchingConsistencyException()
         }
     }
-
-    override fun getResult(): DirectoryRecord {
-        children.sortBy { it.name }
-        calculateHash()
-        return DirectoryRecord(name, hash, children)
-    }
-
-    private fun calculateHash() {
-        hash = SHA1Hash.calculate(children.joinToString(CANONICAL_RECORD_LINE_SEPARATOR))
-    }
 }
+
+open class FetchingException(message: String) : Exception(message)
+
+class FetchingConsistencyException : FetchingException("Fetched content's hash differs from prefetched hash.")
 
 const val CANONICAL_RECORD_LINE_SEPARATOR = "\n"
