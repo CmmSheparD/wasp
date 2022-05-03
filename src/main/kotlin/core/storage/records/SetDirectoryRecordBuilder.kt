@@ -17,7 +17,7 @@ abstract class SetDirectoryRecordBuilder : DirectoryRecordBuilder {
             return record.name.hashCode()
         }
     }
-    protected var children = mutableSetOf<RecordHolder>()
+    protected val children = mutableSetOf<RecordHolder>()
 
     override fun reset() {
         children.clear()
