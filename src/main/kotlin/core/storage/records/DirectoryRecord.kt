@@ -28,15 +28,16 @@ class DirectoryRecord(name: String, hash: String, _children: List<Record> = empt
         }
 
         override fun getResult(): DirectoryRecord {
-            if (record?.isFetched == true) {
-                return record!!
-            }
+            if (record?.isFetched != true) gatherUp()
+            return record!!
+        }
+
+        private fun gatherUp() {
             check(record != null)
             val childrenList = children.map { it.record }.sortedBy { it.name }
             checkConsistencyWith(childrenList)
             record!!.children = childrenList
             record!!.isFetched = true
-            return record!!
         }
 
         private fun checkConsistencyWith(list: List<Record>) {
